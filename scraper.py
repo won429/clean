@@ -2,76 +2,99 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from datetime import datetime
+import urllib3
+
+# 보안 인증서 경고 무시 (공공기관 사이트 접속 시 필수)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_kknu_notices():
     print("🚀 국립경국대학교 공지사항 수집 시작...")
     
-    # 1. 수집할 학교 게시판 주소 (실제 국립경국대 도메인 반영)
-    # ※ 주의: 실제 공지사항 목록이 있는 정확한 세부 게시판 URL로 맞춰주세요.
-    url = "https://www.gknu.ac.kr/board/notice" # 예시: 실제 공지사항 게시판 URL
+    # 1. 실제 국립경국대학교 학사안내 게시판 진짜 주소
+    url = "https://www.gknu.ac.kr/main/board/index.do?menu_idx=68&manage_idx=1&search.category1=102"
     base_url = "https://www.gknu.ac.kr"
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124'
     }
     
+    notice_list = []
+    
     try:
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
+        response = requests.get(url, headers=headers, timeout=15, verify=False)
+        response.raise_for_status() # 접속 실패 시 여기서 에러 발생
+        
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # 실제 게시판 구조에 맞춘 선택자 (사이트 개편 시 수정 필요)
-        # ※ 참고: 현재 경국대 홈페이지 HTML 구조를 가정한 범용 선택자입니다.
-        rows = soup.select('table tbody tr:not(.notice, .top)') # 상단 고정공지 제외한 일반 글
+        # 실제 경국대 게시판 테이블(tr) 찾기
+        rows = soup.select('table tbody tr')
         
-        notice_list = []
-        
-        for idx, row in enumerate(rows[:10]): # 최신 글 10개만 가져오기
-            title_elem = row.select_one('td.subject a, td.title a, a') # a 태그를 유연하게 찾도록 수정
-            date_elem = row.select_one('td.date, td:nth-last-child(2)') # 날짜가 들어가는 전형적인 위치
-            dept_elem = row.select_one('td.writer, td:nth-child(3)') # 담당 부서 또는 작성자
+        for row in rows:
+            if len(notice_list) >= 15: # 최신 글 15개까지만
+                break
+                
+            tds = row.select('td')
+            if len(tds) < 4:
+                continue
+                
+            a_tag = row.select_one('a')
+            if not a_tag:
+                continue
+                
+            title = a_tag.get_text(strip=True)
+            href = a_tag['href']
+            link = href if href.startswith('http') else base_url + href
             
-            if title_elem and date_elem:
-                title = title_elem.get_text(strip=True)
+            # 날짜 추출 (YYYY.MM.DD 형태)
+            date_str = ""
+            for td in tds:
+                txt = td.get_text(strip=True)
+                if len(txt) == 10 and (txt.count('-') == 2 or txt.count('.') == 2):
+                    date_str = txt.replace('-', '.')
+                    break
+            if not date_str and len(tds) >= 5:
+                date_str = tds[4].get_text(strip=True).replace('-', '.')
                 
-                # 링크 경로가 절대/상대 경로인지 판단하여 조립
-                href = title_elem['href']
-                link = href if href.startswith('http') else base_url + href
+            # 카테고리 추출
+            category = "학사"
+            if len(tds) >= 2 and len(tds[1].get_text(strip=True)) <= 10:
+                category = tds[1].get_text(strip=True)
+                if "공지" in category: category = "일반"
                 
-                date_str = date_elem.get_text(strip=True)
-                dept = dept_elem.get_text(strip=True) if dept_elem else "일반"
-                
-                # 담당 부서 이름을 기준으로 카테고리 자동 분류 로직
-                category = "일반"
-                if "학사" in dept or "교무" in dept: category = "학사"
-                elif "장학" in title or "학생" in dept: category = "장학"
-                elif "취업" in dept or "진로" in title: category = "취업"
-                
-                # 오늘 날짜와 비교하여 HOT(새글) 여부 판단
-                today = datetime.now().strftime("%Y-%m-%d")
-                is_hot = (date_str == today)
-                
-                # 앱에 들어갈 데이터 형식으로 맞춤 조립
-                notice_list.append({
-                    "id": idx + 1,
-                    "school": "경국대(안동)",
-                    "category": category,
-                    "title": title,
-                    "timeAgo": date_str, # 원래는 '10분 전' 등으로 계산해야 하지만 우선 날짜로 표기
-                    "link": link,
-                    "isHot": is_hot,
-                    "dDay": None # 본문 분석이 필요하므로 기본값 Null
-                })
-                
-        # 2. 수집된 데이터를 JSON 파일로 저장 (앱에서 쓰기 좋게)
+            # 오늘 올라온 글인지 확인
+            today = datetime.now().strftime("%Y.%m.%d")
+            is_hot = (date_str == today)
+            
+            notice_list.append({
+                "id": len(notice_list) + 1,
+                "school": "국립경국대",
+                "category": category,
+                "title": title,
+                "timeAgo": date_str,
+                "link": link,
+                "isHot": is_hot,
+                "dDay": None
+            })
+            
+    except Exception as e:
+        print(f"❌ 데이터 수집 중 에러 발생: {e}")
+        # 에러가 나도 앱이 멈추지 않게 긴급 메시지를 데이터로 만듭니다.
+        notice_list.append({
+            "id": 1,
+            "school": "시스템",
+            "category": "오류",
+            "title": f"학교 서버 접속 지연 중입니다 ({str(e)[:30]})",
+            "timeAgo": datetime.now().strftime("%Y.%m.%d"),
+            "link": "#",
+            "isHot": True,
+            "dDay": "점검중"
+        })
+
+    finally:
+        # ✨ 핵심 방어막: 에러가 나든 성공하든 무조건 json 파일을 생성합니다!
         with open('notices.json', 'w', encoding='utf-8') as f:
             json.dump(notice_list, f, ensure_ascii=False, indent=2)
-            
-        print(f"✅ 총 {len(notice_list)}개의 공지사항 수집 완료! 'notices.json' 파일이 생성되었습니다.")
-        
-    except Exception as e:
-        print(f"❌ 데이터 수집 중 오류 발생: {e}")
+        print(f"✅ 'notices.json' 파일 강제 저장 완료! (총 {len(notice_list)}개)")
 
-# 실행
 if __name__ == "__main__":
     get_kknu_notices()
