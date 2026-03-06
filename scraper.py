@@ -9,7 +9,7 @@ import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_kknu_notices():
-    print("🚀 국립경국대학교 공지사항 정밀 수집 (본문 강화 버전) 시작...")
+    print("🚀 국립경국대학교 공지사항 초강력 정밀 수집 시작...")
     
     url = "https://www.gknu.ac.kr/main/board/index.do?menu_idx=68&manage_idx=1&search.category1=102"
     base_url = "https://www.gknu.ac.kr"
@@ -69,74 +69,80 @@ def get_kknu_notices():
             today = datetime.now().strftime("%Y.%m.%d")
             is_hot = (date_str == today)
             
-            # ✨ 핵심: 본문 추출 초강력 투망 던지기
+            # ✨ 100% 무조건 쓸어 담는 본문 추출기
             content_text = ""
+            img_count = 0
             try:
                 detail_resp = requests.get(link, headers=headers, timeout=5, verify=False)
                 detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
                 
-                # 학교 홈페이지들이 본문을 숨겨두는 거의 모든 클래스명 총동원
+                content_area = None
+                
+                # 1. 전국 대학 게시판 클래스명 싹 다 털기
                 selectors = [
-                    '.b-content-box', '.b-txt', '.board-contents', '.board_txt', 
-                    '.board_view_con', '.view_con', '.article_view', '.content', 
-                    '.view_body', '.board_body', '.board_content', 'td.content', 
-                    '.ui-board-view', '#board_content', '.view-content',
-                    # ✨ 추가 투망: 경국대 및 기타 대학의 변태 클래스명 총집합
+                    '.board_view_con', '.b-content-box', '.board_txt', '.view_con', '.article_view', 
+                    '.board-contents', '.content', '.view_body', '.board_body', '.board_content', 
+                    'td.content', '.ui-board-view', '#board_content', '.view-content',
                     '.board_view_content', '.board-view-content', '.b-con-box', '.board_con',
-                    '.boardView', '.view_area', '.b_content', '.post-content', '.view_info', '.dbData'
+                    '.boardView', '.view_area', '.b_content', '.post-content', '.view_info', '.dbData',
+                    '.board_view', '.bbs_view', '.v_con', '.board_article', 'td.con', '.con_txt', 
+                    '#bo_v_con', '.board_view_area', '.fr-view'
                 ]
                 
-                content_area = None
-                img_count = 0
                 for selector in selectors:
-                    element = detail_soup.select_one(selector)
-                    if element:
-                        text_length = len(element.get_text(strip=True))
-                        img_count = len(element.select('img'))
+                    elements = detail_soup.select(selector)
+                    for el in elements:
+                        # 통째로 잡힌 껍데기 무시
+                        if el.find(['header', 'footer']): continue
                         
-                        # ✨ 조건 완화: 글자가 5자 이상이거나, 사진이 1장이라도 들어있다면 "이게 본문이다!" 확정
-                        if text_length > 5 or img_count > 0:
-                            content_area = element
-                            break # 진짜 본문을 찾았으면 탐색 중단!
-                            
-                # ✨ 궁극의 무기 (수학적 탐색): 만약 위 이름표를 다 피했다면, 글씨가 가장 빽빽하게 뭉쳐있는 곳을 강제로 찾아냅니다!
+                        text_length = len(el.get_text(strip=True))
+                        img_count = len(el.select('img'))
+                        if text_length > 10 or img_count > 0:
+                            content_area = el
+                            break
+                    if content_area: break
+                        
+                # 2. ✨ 핵심 해결책! 위에서 못 찾았으면 방해 조건 없이 무식하게 텍스트 제일 많은 놈 잡아채기!
                 if not content_area:
-                    all_blocks = detail_soup.find_all(['div', 'td', 'p', 'span'])
+                    # 방해되는 껍데기(메뉴, 꼬리말, 스크립트 등) 전부 파괴
+                    for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript']):
+                        trash.extract()
+                        
+                    candidates = detail_soup.find_all(['div', 'td', 'article', 'section'])
                     best_block = None
                     max_len = 0
                     
-                    for block in all_blocks:
-                        block_text = block.get_text(strip=True)
-                        # 홈페이지 껍데기(푸터, 상단메뉴 등) 제외
-                        if "Copyright" in block_text or "개인정보" in block_text or "로그인" in block_text:
+                    for block in candidates:
+                        # 링크(a)가 너무 많은 블록(메뉴판, 게시판 목록)은 본문에서 제외!
+                        a_text_len = sum(len(a.get_text(strip=True)) for a in block.find_all('a'))
+                        total_text_len = len(block.get_text(strip=True))
+                        
+                        if total_text_len > 0 and (a_text_len / total_text_len) > 0.4:
                             continue
                             
-                        text_len = len(block_text)
-                        # 다른 큰 박스들을 감싸고 있는 껍데기가 아니라, 진짜 글씨가 뭉쳐있는 알맹이 태그를 찾음
-                        if text_len > max_len and len(block.find_all(['div', 'table'])) < 2:
-                            max_len = text_len
+                        # 남은 덩어리 중 가장 텍스트가 많은 것을 본문으로 채택! (기존의 방해 조건 완전 삭제)
+                        if total_text_len > max_len:
+                            max_len = total_text_len
                             best_block = block
                             
                     if best_block and max_len > 10:
                         content_area = best_block
                         img_count = len(content_area.select('img'))
                         
+                # 3. 텍스트 예쁘게 다듬기
                 if content_area:
-                    # 불필요한 스크립트나 스타일(코드 찌꺼기) 제거
                     for script in content_area(["script", "style"]):
                         script.extract()
                     
-                    # 텍스트 추출 시 문단 구분이 되도록 줄바꿈 깔끔하게 처리
                     lines = [line.strip() for line in content_area.get_text(separator='\n').splitlines() if line.strip()]
                     content_text = '\n\n'.join(lines)
                     
-                    # ✨ 텍스트는 없고 사진만 있는 게시글 특별 처리!
                     if len(content_text) < 5 and img_count > 0:
                         content_text = "🖼️ [텍스트 없이 포스터/이미지로만 안내된 공지사항입니다]\n\n상세 이미지는 하단의 '웹사이트에서 원문 보기' 버튼을 눌러 확인해 주세요."
                     elif len(content_text) > 1000:
                         content_text = content_text[:1000] + "\n\n... (원문에서 계속)"
                 else:
-                    content_text = "🔒 표(Table)로만 작성되었거나 특수 구조로 된 게시글입니다.\n\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 학교 홈페이지에서 직접 확인해 주세요."
+                    content_text = "🔒 특수 구조로 된 게시글입니다.\n\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 학교 홈페이지에서 직접 확인해 주세요."
             except Exception as e:
                 print(f"본문 긁어오기 실패 ({link}): {e}")
             
@@ -164,7 +170,7 @@ def get_kknu_notices():
     finally:
         with open('notices.json', 'w', encoding='utf-8') as f:
             json.dump(notice_list, f, ensure_ascii=False, indent=2)
-        print(f"✅ 'notices.json' 파일 정밀 수집(본문 포함) 완료! (총 {len(notice_list)}개)")
+        print(f"✅ 'notices.json' 파일 정밀 수집 완료! (총 {len(notice_list)}개)")
 
 if __name__ == "__main__":
     get_kknu_notices()
