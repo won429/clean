@@ -5,18 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>국립경국대 주요 공지</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- Babel (브라우저에서 JSX를 바로 실행하게 해줌) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    /* 스크롤바 숨기기 (모바일 앱 느낌) */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     body { background-color: #E5E7EB; }
@@ -25,15 +19,12 @@
 <body>
   <div id="root"></div>
 
-  <!-- React 코드 시작 -->
   <script type="text/babel">
-    const { useState } = React;
+    // ✨ 핵심: React에서 데이터를 불러오는 useEffect 추가
+    const { useState, useEffect } = React;
 
-    // --- 아이콘 세팅 (Lucide 아이콘을 HTML에 맞게 내장) ---
     const IconBase = ({ children, size = 24, strokeWidth = 2, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
-        {children}
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
     );
     const MapPin = (p) => <IconBase {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconBase>;
     const ChevronDown = (p) => <IconBase {...p}><path d="m6 9 6 6 6-6"/></IconBase>;
@@ -48,24 +39,37 @@
     const MessageCircle = (p) => <IconBase {...p}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></IconBase>;
     const User = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
 
-    // --- 데이터 세팅 ---
-    const FEED_DATA = [
-      { id: 1, school: "경국대(안동)", category: "학사", title: "2026학년도 1학기 수강신청 최종 일정 및 유의사항 안내", timeAgo: "10분 전", isHot: true, dDay: null },
-      { id: 2, school: "경국대(안동)", category: "장학", title: "삼성-경국대 반도체 트랙 장학생 모집 공고 (전액 지원)", timeAgo: "1시간 전", isHot: true, dDay: "D-2" },
-      { id: 3, school: "경국대(안동)", category: "취업", title: "2026 상반기 찾아가는 취업박람회 참여 기업 리스트", timeAgo: "3시간 전", isHot: false, dDay: null },
-      { id: 4, school: "경국대(안동)", category: "일반", title: "중앙도서관 제1열람실 냉난방기 교체 공사에 따른 휴실", timeAgo: "5시간 전", isHot: false, dDay: null }
-    ];
-
     function App() {
       const [activeTab, setActiveTab] = useState("전체");
       const [activeNav, setActiveNav] = useState("home");
       const [selectedSchool, setSelectedSchool] = useState("국립경국대학교 안동캠퍼스");
       const [isSchoolMenuOpen, setIsSchoolMenuOpen] = useState(false);
       
+      // ✨ 가짜 데이터를 지우고, 진짜 데이터를 담을 빈 공간을 만듭니다.
+      const [feedData, setFeedData] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+
       const SCHOOLS = ["국립경국대학교 안동캠퍼스", "국립경국대학교 상주캠퍼스", "서울캠퍼스", "글로벌캠퍼스"];
       const categories = ["전체", "인기", "학사", "장학", "취업", "일반"];
 
-      const filteredFeed = FEED_DATA.filter(item => {
+      // ✨ 파이썬이 만든 notices.json 파일을 긁어오는 로직!
+      useEffect(() => {
+        fetch('notices.json')
+          .then(response => {
+            if (!response.ok) throw new Error("데이터 파일이 아직 없습니다.");
+            return response.json();
+          })
+          .then(data => {
+            setFeedData(data); // 진짜 데이터를 화면에 쏙!
+            setIsLoading(false);
+          })
+          .catch(error => {
+            console.error("데이터 로딩 실패:", error);
+            setIsLoading(false);
+          });
+      }, []);
+
+      const filteredFeed = feedData.filter(item => {
         if (activeTab === "전체") return true;
         if (activeTab === "인기") return item.isHot;
         return item.category === activeTab;
@@ -75,20 +79,15 @@
         <div className="min-h-screen flex justify-center font-sans text-[#191F28] selection:bg-blue-100">
           <div className="w-full max-w-md bg-[#F2F4F6] min-h-screen relative shadow-2xl flex flex-col overflow-hidden">
             
-            {/* HEADER */}
             <header className="px-5 pt-14 pb-5 flex justify-between items-end bg-[#F2F4F6] z-20 sticky top-0">
               <div>
                 <div className="relative z-30">
-                  <button 
-                    onClick={() => setIsSchoolMenuOpen(!isSchoolMenuOpen)}
-                    className="flex items-center gap-1.5 text-[#3182F6] mb-1.5 hover:opacity-80 transition-opacity"
-                  >
+                  <button onClick={() => setIsSchoolMenuOpen(!isSchoolMenuOpen)} className="flex items-center gap-1.5 text-[#3182F6] mb-1.5 hover:opacity-80 transition-opacity">
                     <MapPin size={14} strokeWidth={2.5} />
                     <span className="text-[13px] font-bold tracking-tight">{selectedSchool}</span>
                     <ChevronDown size={14} strokeWidth={2.5} className={`transition-transform duration-200 ${isSchoolMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Dropdown */}
                   {isSchoolMenuOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setIsSchoolMenuOpen(false)} />
@@ -123,23 +122,21 @@
 
             <main className="flex-1 overflow-y-auto pb-32 px-5 no-scrollbar">
               
-              {/* WIDGET */}
               <section className="mb-8 mt-1">
                 <div className="bg-[#191F28] rounded-[24px] p-6 text-white shadow-[0_8px_20px_rgb(0,0,0,0.12)] relative overflow-hidden group cursor-pointer">
                   <div className="flex justify-between items-start mb-4">
                     <span className="inline-block px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-md text-[11px] font-bold tracking-wider uppercase text-white/90">
-                      Deadline D-2
+                      LIVE UPDATE
                     </span>
                     <ChevronRight size={20} className="text-white/50 group-hover:text-white transition-colors" />
                   </div>
                   <h2 className="text-[20px] font-bold leading-[1.35] mb-2">
-                    국가장학금 2차 신청<br/>놓치지 마세요
+                    실시간 학교 공지사항<br/>자동 수집 중입니다.
                   </h2>
-                  <p className="text-[#8B95A1] text-[13px] font-medium">소득분위 산정을 위해 가구원 동의가 필요합니다.</p>
+                  <p className="text-[#8B95A1] text-[13px] font-medium">아래 목록에서 진짜 공지사항을 확인하세요.</p>
                 </div>
               </section>
 
-              {/* TABS */}
               <div className="flex gap-2 overflow-x-auto no-scrollbar touch-pan-x mb-5 pb-2">
                 {categories.map((cat) => (
                   <button
@@ -154,10 +151,28 @@
                 ))}
               </div>
 
-              {/* CARDS */}
               <div className="space-y-3">
-                {filteredFeed.map((item) => (
-                  <article key={item.id} className="bg-white p-5 rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98] duration-200">
+                {/* ✨ 로딩 중일 때 표시할 화면 */}
+                {isLoading && (
+                  <div className="text-center py-10 text-[#8B95A1] font-bold animate-pulse">
+                    데이터를 불러오는 중입니다...
+                  </div>
+                )}
+                
+                {/* ✨ 데이터가 없을 때 (파이썬이 아직 안 돌았을 때) */}
+                {!isLoading && feedData.length === 0 && (
+                  <div className="text-center py-10 text-[#8B95A1] font-bold">
+                    아직 수집된 공지사항이 없습니다. 파이썬 로봇을 실행해주세요!
+                  </div>
+                )}
+
+                {/* ✨ 파이썬이 가져온 진짜 데이터를 화면에 뿌림 (클릭 시 링크 이동 추가) */}
+                {!isLoading && filteredFeed.map((item) => (
+                  <article 
+                    key={item.id} 
+                    onClick={() => window.open(item.link, '_blank')} // 클릭하면 진짜 학교 사이트로 이동!
+                    className="bg-white p-5 rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98] duration-200"
+                  >
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-[12px] font-bold text-[#3182F6]">{item.category}</span>
@@ -165,22 +180,18 @@
                           <>
                             <span className="w-1 h-1 bg-[#D1D6DB] rounded-full"></span>
                             <span className="flex items-center gap-1 text-[11px] font-extrabold text-[#F04452] tracking-wider bg-[#F04452]/10 px-1.5 py-0.5 rounded">
-                              <TrendingUp size={10} strokeWidth={3} /> HOT
+                              <TrendingUp size={10} strokeWidth={3} /> NEW
                             </span>
                           </>
                         )}
                       </div>
-                      {item.dDay && (
-                        <span className="text-[12px] font-extrabold text-[#F04452] bg-[#F04452]/5 px-2 py-1 rounded-md tracking-tight">{item.dDay}</span>
-                      )}
                     </div>
                     
                     <h3 className="text-[16px] font-bold text-[#191F28] leading-[1.45] mb-4">{item.title}</h3>
                     
                     <div className="flex items-center justify-between mt-1 pt-4 border-t border-[#F2F4F6]">
                       <div className="flex items-center gap-3 text-[12px] text-[#8B95A1] font-medium">
-                        <span className="flex items-center gap-1.5"><Clock size={14} strokeWidth={2} /> {item.timeAgo}</span>
-                        <span className="flex items-center gap-1.5"><Calendar size={14} strokeWidth={2} /> 03.06</span>
+                        <span className="flex items-center gap-1.5"><Calendar size={14} strokeWidth={2} /> {item.timeAgo}</span>
                       </div>
                       <Bookmark size={18} strokeWidth={2} className="text-[#D1D6DB] hover:text-[#3182F6] transition-colors" />
                     </div>
@@ -189,7 +200,6 @@
               </div>
             </main>
 
-            {/* BOTTOM NAV */}
             <nav className="absolute bottom-6 left-6 right-6 bg-white/85 backdrop-blur-2xl border border-white/50 rounded-[24px] shadow-[0_10px_40px_rgb(0,0,0,0.08)] z-50 px-2 py-2 flex justify-between items-center">
               {[
                 { id: 'home', icon: Home, label: '홈' },
