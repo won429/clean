@@ -9,7 +9,7 @@ import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_kknu_notices():
-    print("🚀 국립경국대학교 공지사항 초강력 정밀 수집 시작...")
+    print("🚀 국립경국대학교 공지사항 초강력 정밀 수집(최종 진화형) 시작...")
     
     url = "https://www.gknu.ac.kr/main/board/index.do?menu_idx=68&manage_idx=1&search.category1=102"
     base_url = "https://www.gknu.ac.kr"
@@ -22,11 +22,9 @@ def get_kknu_notices():
     
     notice_list = []
     
-    # 세션(Session) 열기
     session = requests.Session()
     
     try:
-        # 1차 방문: 쿠키 발급
         response = session.get(url, headers=headers, timeout=15, verify=False)
         response.raise_for_status() 
         
@@ -34,7 +32,7 @@ def get_kknu_notices():
         rows = soup.select('table tbody tr')
         
         for row in rows:
-            if len(notice_list) >= 15: # 최신 글 15개까지만
+            if len(notice_list) >= 15:
                 break
                 
             tds = row.select('td')
@@ -48,23 +46,20 @@ def get_kknu_notices():
             title = re.sub(r'^\[.*?\]\s*', '', title)
             href = valid_a.get('href', '')
             
-            # ✨ 핵심 해결: 모든 접속 주소에 필수 입장권(search.category1=102) 강제 부착!
-            # 이 파라미터가 빠지면 학교 서버가 무조건 500 에러를 뱉습니다.
+            # ✨ 핵심 1: 사용자가 찾아낸 '완벽한 황금 열쇠 주소' 100% 적용
+            # 학교 서버가 요구하는 모든 빈 껍데기 파라미터까지 완벽하게 복제해서 500 에러 원천 차단!
             if 'javascript' in href.lower() or 'fn' in href.lower():
                 numbers = re.findall(r"\d+", href)
                 if numbers:
                     board_idx = max(numbers, key=len)
-                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&search.category1=102&board_idx={board_idx}"
+                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10&v"
                 else: 
                     link = url
             elif href.startswith('?'): 
                 link = "https://www.gknu.ac.kr/main/board/view.do" + href
-                if "search.category1" not in link: 
-                    link += "&search.category1=102"
-            elif href.startswith('/'): 
-                link = base_url + href
-            else: 
-                link = href
+                if "search.category1" not in link: link += "&search.category1=102"
+            elif href.startswith('/'): link = base_url + href
+            else: link = href
             
             date_str = ""
             for td in tds:
@@ -83,14 +78,13 @@ def get_kknu_notices():
             today = datetime.now().strftime("%Y.%m.%d")
             is_hot = (date_str == today)
             
-            # 본문 추출
             content_text = ""
             img_count = 0
             try:
                 detail_headers = headers.copy()
                 detail_headers['Referer'] = url
                 
-                # 완전한 주소(link)로 접속
+                # 황금 열쇠 주소로 접속
                 detail_resp = session.get(link, headers=detail_headers, timeout=10, verify=False)
                 
                 if detail_resp.status_code != 200:
@@ -104,19 +98,24 @@ def get_kknu_notices():
                     else:
                         content_area = None
                         
+                        # ✨ 핵심 2: 방해물(게시글 제목, 작성자 정보, 하단 메뉴 등) 완전 파괴
+                        for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript', 'form']):
+                            trash.extract()
+                        for info in detail_soup.select('.board_info, .view_info, .board_title, .view_tit, .b-title-box, .b-info-box, .bbs_info, .file_list, .dl_file'):
+                            info.extract()
+
                         selectors = [
                             '.board_view_con', '.b-content-box', '.board_txt', '.view_con', '.article_view', 
                             '.board-contents', '.content', '.view_body', '.board_body', '.board_content', 
                             'td.content', '.ui-board-view', '#board_content', '.view-content',
                             '.board_view_content', '.board-view-content', '.b-con-box', '.board_con',
-                            '.boardView', '.view_area', '.b_content', '.post-content', '.view_info', '.dbData',
+                            '.boardView', '.view_area', '.b_content', '.post-content', '.dbData',
                             'div[class*="view"]', 'div[class*="content"]', 'td[class*="content"]'
                         ]
                         
                         for selector in selectors:
                             elements = detail_soup.select(selector)
                             for el in elements:
-                                if el.find(['header', 'footer']): continue
                                 text_length = len(el.get_text(strip=True))
                                 img_count = len(el.select('img'))
                                 if text_length > 10 or img_count > 0:
@@ -124,16 +123,15 @@ def get_kknu_notices():
                                     break
                             if content_area: break
                                 
+                        # ✨ 핵심 3: 방해물이 다 사라진 텅 빈 공간에서 가장 글씨가 많은 '진짜 본문' 쥐어짜기
                         if not content_area:
-                            for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript', 'form']):
-                                trash.extract()
-                                
                             body = detail_soup.find('body')
                             if body:
                                 best_block = None
                                 max_len = 0
                                 
                                 for block in body.find_all(['div', 'td', 'article', 'section']):
+                                    # 테이블 등 복잡한 구조로 너무 깊게 들어간 블록은 제외
                                     if len(block.find_all(['div', 'table'])) > 5: continue
                                         
                                     text_len = len(block.get_text(strip=True))
@@ -147,10 +145,8 @@ def get_kknu_notices():
                                 else:
                                     content_area = body
                                     
+                        # 텍스트 예쁘게 다듬기
                         if content_area:
-                            for script in content_area(["script", "style"]):
-                                script.extract()
-                            
                             for br in content_area.find_all("br"):
                                 br.replace_with("\n")
                                 
