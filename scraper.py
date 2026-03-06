@@ -46,20 +46,24 @@ def get_kknu_notices():
             title = re.sub(r'^\[.*?\]\s*', '', title)
             href = valid_a.get('href', '')
             
-            # ✨ 핵심 1: 사용자가 찾아낸 '완벽한 황금 열쇠 주소' 100% 적용
-            # 학교 서버가 요구하는 모든 빈 껍데기 파라미터까지 완벽하게 복제해서 500 에러 원천 차단!
+            # ✨ 핵심 해결: 선생님이 찾아주신 '완벽한 황금 열쇠 주소' 100% 이식!
+            # 학교 서버가 요구하는 쓸모없는 14개의 빈 껍데기 파라미터까지 완벽하게 복제해서 500 에러 원천 차단!
             if 'javascript' in href.lower() or 'fn' in href.lower():
                 numbers = re.findall(r"\d+", href)
                 if numbers:
                     board_idx = max(numbers, key=len)
-                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10&v"
+                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10"
                 else: 
                     link = url
             elif href.startswith('?'): 
                 link = "https://www.gknu.ac.kr/main/board/view.do" + href
-                if "search.category1" not in link: link += "&search.category1=102"
-            elif href.startswith('/'): link = base_url + href
-            else: link = href
+                # 만약 상대경로 주소인데 필수 파라미터가 빠져있다면 강제 주입
+                if "old_menu_idx" not in link: 
+                    link += "&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10"
+            elif href.startswith('/'): 
+                link = base_url + href
+            else: 
+                link = href
             
             date_str = ""
             for td in tds:
