@@ -20,7 +20,6 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    // ✨ 핵심: React에서 데이터를 불러오는 useEffect 추가
     const { useState, useEffect } = React;
 
     const IconBase = ({ children, size = 24, strokeWidth = 2, className = "" }) => (
@@ -38,6 +37,7 @@
     const Home = (p) => <IconBase {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>;
     const MessageCircle = (p) => <IconBase {...p}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></IconBase>;
     const User = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
+    const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconBase>;
 
     function App() {
       const [activeTab, setActiveTab] = useState("전체");
@@ -47,19 +47,18 @@
       
       const [feedData, setFeedData] = useState([]);
       const [isLoading, setIsLoading] = useState(true);
-      // ✨ 에러 메시지를 화면에 띄우기 위한 공간 추가
       const [errorMsg, setErrorMsg] = useState("");
+      
+      // ✨ 게시글 본문 팝업을 위한 상태
+      const [selectedNotice, setSelectedNotice] = useState(null);
 
       const SCHOOLS = ["국립경국대학교 안동캠퍼스", "국립경국대학교 상주캠퍼스", "서울캠퍼스", "글로벌캠퍼스"];
       const categories = ["전체", "인기", "학사", "장학", "취업", "일반"];
 
       useEffect(() => {
-        // 혹시 파일이 캐싱되어 옛날 걸 불러올까 봐 타임스탬프 추가
         fetch(`notices.json?t=${new Date().getTime()}`)
           .then(response => {
-            if (!response.ok) {
-              throw new Error(`파일을 찾을 수 없습니다 (상태: ${response.status}). 깃허브에 notices.json 파일이 생성되었는지 확인하세요!`);
-            }
+            if (!response.ok) throw new Error(`데이터를 찾을 수 없습니다 (상태: ${response.status}).`);
             return response.json();
           })
           .then(data => {
@@ -68,7 +67,7 @@
           })
           .catch(error => {
             console.error("데이터 로딩 실패:", error);
-            setErrorMsg(error.message); // ✨ 화면에 에러 띄우기
+            setErrorMsg(error.message);
             setIsLoading(false);
           });
       }, []);
@@ -83,6 +82,7 @@
         <div className="min-h-screen flex justify-center font-sans text-[#191F28] selection:bg-blue-100">
           <div className="w-full max-w-md bg-[#F2F4F6] min-h-screen relative shadow-2xl flex flex-col overflow-hidden">
             
+            {/* 상단 헤더 */}
             <header className="px-5 pt-14 pb-5 flex justify-between items-end bg-[#F2F4F6] z-20 sticky top-0">
               <div>
                 <div className="relative z-30">
@@ -156,13 +156,11 @@
               </div>
 
               <div className="space-y-3">
-                {/* ✨ 에러가 발생했을 때 보여줄 경고창 */}
                 {errorMsg && (
                   <div className="bg-[#F04452]/10 border border-[#F04452]/20 rounded-[20px] p-6 text-center shadow-sm">
                     <h3 className="text-[#F04452] font-extrabold text-[16px] mb-2">🚨 데이터 연결 실패</h3>
                     <p className="text-[#F04452]/80 text-[13px] font-medium leading-relaxed">
-                      {errorMsg}<br/><br/>
-                      💡 해결 방법: 깃허브 창고에 <b className="text-black">notices.json</b> 파일이 있는지 확인해 주세요! 없다면 파이썬 수집 로봇을 실행해야 합니다.
+                      {errorMsg}<br/><br/>💡 로봇이 아직 데이터를 수집 중이거나 에러가 발생했습니다.
                     </p>
                   </div>
                 )}
@@ -172,19 +170,17 @@
                     데이터를 불러오는 중입니다...
                   </div>
                 )}
-                
-                {/* ✨ 데이터가 없을 때 (파이썬이 아직 안 돌았을 때) */}
-                {!isLoading && feedData.length === 0 && (
+
+                {!isLoading && feedData.length === 0 && !errorMsg && (
                   <div className="text-center py-10 text-[#8B95A1] font-bold">
-                    아직 수집된 공지사항이 없습니다. 파이썬 로봇을 실행해주세요!
+                    아직 수집된 공지사항이 없습니다.
                   </div>
                 )}
 
-                {/* ✨ 파이썬이 가져온 진짜 데이터를 화면에 뿌림 (클릭 시 링크 이동 추가) */}
                 {!isLoading && filteredFeed.map((item) => (
                   <article 
                     key={item.id} 
-                    onClick={() => window.open(item.link, '_blank')} // 클릭하면 진짜 학교 사이트로 이동!
+                    onClick={() => setSelectedNotice(item)} // ✨ 클릭하면 본문 팝업 띄우기!
                     className="bg-white p-5 rounded-[20px] shadow-sm hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98] duration-200"
                   >
                     <div className="flex justify-between items-center mb-3">
@@ -201,7 +197,7 @@
                       </div>
                     </div>
                     
-                    <h3 className="text-[16px] font-bold text-[#191F28] leading-[1.45] mb-4">{item.title}</h3>
+                    <h3 className="text-[16px] font-bold text-[#191F28] leading-[1.45] mb-4 line-clamp-2">{item.title}</h3>
                     
                     <div className="flex items-center justify-between mt-1 pt-4 border-t border-[#F2F4F6]">
                       <div className="flex items-center gap-3 text-[12px] text-[#8B95A1] font-medium">
@@ -214,6 +210,45 @@
               </div>
             </main>
 
+            {/* ✨ 토스(Toss) 스타일 본문 팝업창(Modal) */}
+            {selectedNotice && (
+              <div className="absolute inset-0 z-[60] flex flex-col bg-white animate-in slide-in-from-bottom-4 duration-200">
+                <header className="px-5 pt-14 pb-4 flex justify-between items-center border-b border-[#F2F4F6]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-[#3182F6] bg-blue-50 px-2.5 py-1 rounded-md">{selectedNotice.category}</span>
+                    <h2 className="text-[15px] font-bold text-[#191F28]">상세 공지</h2>
+                  </div>
+                  <button onClick={() => setSelectedNotice(null)} className="w-9 h-9 flex items-center justify-center bg-[#F2F4F6] hover:bg-gray-200 transition-colors rounded-full text-[#4E5968]">
+                    <X size={20} strokeWidth={2.5} />
+                  </button>
+                </header>
+                
+                <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
+                  <h1 className="text-[22px] font-extrabold text-[#191F28] leading-[1.4] mb-4 break-keep">
+                    {selectedNotice.title}
+                  </h1>
+                  <div className="text-[13px] text-[#8B95A1] font-medium mb-6 pb-6 border-b border-[#F2F4F6] flex items-center gap-1.5">
+                    <Calendar size={14} strokeWidth={2} /> {selectedNotice.timeAgo}
+                  </div>
+                  <div className="text-[15px] leading-relaxed text-[#4E5968] whitespace-pre-wrap font-medium break-keep">
+                    {selectedNotice.content 
+                      ? selectedNotice.content 
+                      : "본문 내용을 불러올 수 없거나 텍스트 내용이 없는 게시물입니다.\n(이미지나 첨부파일로만 이루어진 공지일 수 있습니다.)"}
+                  </div>
+                </div>
+                
+                <div className="p-5 border-t border-[#F2F4F6] bg-white pb-8">
+                  <button 
+                    onClick={() => window.open(selectedNotice.link, '_blank')} 
+                    className="w-full py-4 flex justify-center items-center gap-2 bg-[#3182F6] text-white rounded-[16px] font-bold text-[16px] hover:bg-blue-600 transition-all shadow-[0_4px_12px_rgba(49,130,246,0.3)] active:scale-[0.98]"
+                  >
+                    웹사이트에서 원문 및 첨부파일 보기 <ChevronRight size={18} strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 하단 네비게이션 바 */}
             <nav className="absolute bottom-6 left-6 right-6 bg-white/85 backdrop-blur-2xl border border-white/50 rounded-[24px] shadow-[0_10px_40px_rgb(0,0,0,0.08)] z-50 px-2 py-2 flex justify-between items-center">
               {[
                 { id: 'home', icon: Home, label: '홈' },
