@@ -89,6 +89,25 @@ def get_kknu_notices():
             today = datetime.now().strftime("%Y.%m.%d")
             is_hot = (date_str == today)
             
+            # ✨ 핵심 3: 본문 내용까지 긁어오기 위해 해당 링크로 한 번 더 접속!
+            content_text = ""
+            try:
+                # 본문 페이지 접속
+                detail_resp = requests.get(link, headers=headers, timeout=5, verify=False)
+                detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
+                
+                # 게시판 본문 영역을 찾는 범용적인 클래스 이름들 탐색
+                content_area = detail_soup.select_one('.board_view, .view_con, .content, .board-contents, .b-content-box, td.content, .ui-board-view')
+                if content_area:
+                    # 엔터(줄바꿈)를 유지하면서 텍스트만 깔끔하게 추출
+                    content_text = content_area.get_text(separator='\n', strip=True)
+                    
+                    # 내용이 너무 길면 앱이 무거워지므로 1000자에서 자르기
+                    if len(content_text) > 1000:
+                        content_text = content_text[:1000] + "\n\n... (원문에서 계속)"
+            except Exception as e:
+                print(f"본문 긁어오기 실패 ({link}): {e}")
+            
             notice_list.append({
                 "id": len(notice_list) + 1,
                 "school": "국립경국대",
@@ -97,7 +116,8 @@ def get_kknu_notices():
                 "timeAgo": date_str,
                 "link": link,
                 "isHot": is_hot,
-                "dDay": None
+                "dDay": None,
+                "content": content_text # ✨ 드디어 본문 데이터 추가!
             })
             
     except Exception as e:
