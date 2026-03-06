@@ -3,12 +3,13 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 import urllib3
+import re  # ✨ 추가된 도구: 숨겨진 글 번호를 찾아내는 탐지기 역할
 
 # 보안 인증서 경고 무시 (공공기관 사이트 접속 시 필수)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_kknu_notices():
-    print("🚀 국립경국대학교 공지사항 수집 시작...")
+    print("🚀 국립경국대학교 공지사항 정밀 수집 시작...")
     
     # 1. 실제 국립경국대학교 학사안내 게시판 진짜 주소
     url = "https://www.gknu.ac.kr/main/board/index.do?menu_idx=68&manage_idx=1&search.category1=102"
@@ -22,7 +23,7 @@ def get_kknu_notices():
     
     try:
         response = requests.get(url, headers=headers, timeout=15, verify=False)
-        response.raise_for_status() # 접속 실패 시 여기서 에러 발생
+        response.raise_for_status() 
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
@@ -37,13 +38,35 @@ def get_kknu_notices():
             if len(tds) < 4:
                 continue
                 
-            a_tag = row.select_one('a')
-            if not a_tag:
+            # ✨ 핵심 1: a 태그가 여러 개일 때 '텍스트가 가장 긴 것'이 무조건 진짜 제목!
+            a_tags = row.select('a')
+            if not a_tags:
                 continue
                 
-            title = a_tag.get_text(strip=True)
-            href = a_tag['href']
-            link = href if href.startswith('http') else base_url + href
+            valid_a = max(a_tags, key=lambda x: len(x.get_text(strip=True)))
+            title = valid_a.get_text(strip=True)
+            
+            # 지저분한 말머리 텍스트 깔끔하게 제거
+            title = re.sub(r'^\[.*?\]\s*', '', title)
+            
+            href = valid_a.get('href', '')
+            
+            # ✨ 핵심 2: 링크가 javascript로 숨겨져 있을 경우 진짜 주소로 강제 조립!
+            if 'javascript' in href.lower():
+                # 숫자(게시글 번호)만 쏙 뽑아냅니다.
+                numbers = re.findall(r"['\"]?(\d+)['\"]?", href)
+                if numbers:
+                    board_idx = numbers[0]
+                    # 실제 게시글을 바로 볼 수 있는 주소로 완벽 조립
+                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}"
+                else:
+                    link = url
+            elif href.startswith('?'):
+                link = "https://www.gknu.ac.kr/main/board/view.do" + href
+            elif href.startswith('/'):
+                link = base_url + href
+            else:
+                link = href
             
             # 날짜 추출 (YYYY.MM.DD 형태)
             date_str = ""
@@ -60,6 +83,7 @@ def get_kknu_notices():
             if len(tds) >= 2 and len(tds[1].get_text(strip=True)) <= 10:
                 category = tds[1].get_text(strip=True)
                 if "공지" in category: category = "일반"
+                if category.isnumeric(): category = "일반" # 단순 번호 방어
                 
             # 오늘 올라온 글인지 확인
             today = datetime.now().strftime("%Y.%m.%d")
@@ -78,12 +102,11 @@ def get_kknu_notices():
             
     except Exception as e:
         print(f"❌ 데이터 수집 중 에러 발생: {e}")
-        # 에러가 나도 앱이 멈추지 않게 긴급 메시지를 데이터로 만듭니다.
         notice_list.append({
             "id": 1,
             "school": "시스템",
             "category": "오류",
-            "title": f"학교 서버 접속 지연 중입니다 ({str(e)[:30]})",
+            "title": f"접속 지연: {str(e)[:30]}",
             "timeAgo": datetime.now().strftime("%Y.%m.%d"),
             "link": "#",
             "isHot": True,
@@ -91,10 +114,9 @@ def get_kknu_notices():
         })
 
     finally:
-        # ✨ 핵심 방어막: 에러가 나든 성공하든 무조건 json 파일을 생성합니다!
         with open('notices.json', 'w', encoding='utf-8') as f:
             json.dump(notice_list, f, ensure_ascii=False, indent=2)
-        print(f"✅ 'notices.json' 파일 강제 저장 완료! (총 {len(notice_list)}개)")
+        print(f"✅ 'notices.json' 파일 정밀 수집 및 저장 완료! (총 {len(notice_list)}개)")
 
 if __name__ == "__main__":
     get_kknu_notices()
