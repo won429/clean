@@ -87,6 +87,7 @@ def get_kknu_notices():
                 ]
                 
                 content_area = None
+                img_count = 0
                 for selector in selectors:
                     element = detail_soup.select_one(selector)
                     if element:
@@ -97,6 +98,28 @@ def get_kknu_notices():
                         if text_length > 5 or img_count > 0:
                             content_area = element
                             break # 진짜 본문을 찾았으면 탐색 중단!
+                            
+                # ✨ 궁극의 무기 (수학적 탐색): 만약 위 이름표를 다 피했다면, 글씨가 가장 빽빽하게 뭉쳐있는 곳을 강제로 찾아냅니다!
+                if not content_area:
+                    all_blocks = detail_soup.find_all(['div', 'td', 'p', 'span'])
+                    best_block = None
+                    max_len = 0
+                    
+                    for block in all_blocks:
+                        block_text = block.get_text(strip=True)
+                        # 홈페이지 껍데기(푸터, 상단메뉴 등) 제외
+                        if "Copyright" in block_text or "개인정보" in block_text or "로그인" in block_text:
+                            continue
+                            
+                        text_len = len(block_text)
+                        # 다른 큰 박스들을 감싸고 있는 껍데기가 아니라, 진짜 글씨가 뭉쳐있는 알맹이 태그를 찾음
+                        if text_len > max_len and len(block.find_all(['div', 'table'])) < 2:
+                            max_len = text_len
+                            best_block = block
+                            
+                    if best_block and max_len > 10:
+                        content_area = best_block
+                        img_count = len(content_area.select('img'))
                         
                 if content_area:
                     # 불필요한 스크립트나 스타일(코드 찌꺼기) 제거
