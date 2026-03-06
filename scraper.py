@@ -5,7 +5,7 @@ from datetime import datetime
 import urllib3
 import re
 
-# 보안 인증서 경고 무시 (공공기관 사이트 접속 시 필수)
+# 보안 인증서 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_kknu_notices():
@@ -15,13 +15,20 @@ def get_kknu_notices():
     base_url = "https://www.gknu.ac.kr"
     
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
     }
     
     notice_list = []
     
+    # ✨ 핵심 1: 세션(Session) 열기! 
+    # 학교 서버에게 '로봇'이 아니라 '일반 방문자'로 인식시키기 위해 쿠키와 방문 기록을 유지합니다.
+    session = requests.Session()
+    
     try:
-        response = requests.get(url, headers=headers, timeout=15, verify=False)
+        # 먼저 게시판 목록 페이지를 방문해서 서버와 인사(쿠키 발급)를 나눕니다.
+        response = session.get(url, headers=headers, timeout=15, verify=False)
         response.raise_for_status() 
         
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -42,17 +49,17 @@ def get_kknu_notices():
             title = re.sub(r'^\[.*?\]\s*', '', title)
             href = valid_a.get('href', '')
             
-            # ✨ 버그 완전 해결: 게시글 링크 조립 시 필수 암호(search.category1=102) 누락 방지!
+            # ✨ 핵심 2: 불필요한 파라미터(search.category1) 제거
+            # 500 에러를 유발하던 찌꺼기 주소를 빼고, 오직 글 번호(board_idx)만 깔끔하게 보냅니다.
             if 'javascript' in href.lower() or 'fn' in href.lower():
                 numbers = re.findall(r"\d+", href)
                 if numbers:
-                    board_idx = max(numbers, key=len) # 가장 긴 숫자(게시글 번호) 추출
-                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&search.category1=102&board_idx={board_idx}"
+                    board_idx = max(numbers, key=len)
+                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}"
                 else: 
                     link = url
             elif href.startswith('?'): 
                 link = "https://www.gknu.ac.kr/main/board/view.do" + href
-                if "search.category1" not in link: link += "&search.category1=102"
             elif href.startswith('/'): link = base_url + href
             else: link = href
             
@@ -73,41 +80,41 @@ def get_kknu_notices():
             today = datetime.now().strftime("%Y.%m.%d")
             is_hot = (date_str == today)
             
-            # ✨ 100% 무조건 쓸어 담는 본문 추출기
+            # 본문 추출
             content_text = ""
             img_count = 0
             try:
-                detail_resp = requests.get(link, headers=headers, timeout=5, verify=False)
+                # ✨ 핵심 3: Referer 추가! "나 아까 그 목록 페이지에서 넘어온 거야!" 라고 서버에 어필
+                detail_headers = headers.copy()
+                detail_headers['Referer'] = url
                 
-                # 학교 서버가 접속을 거부하거나 500 에러를 뱉었는지 1차 확인
+                # 일반 requests.get이 아닌 세션(session.get)을 이용해 본문 접속
+                detail_resp = session.get(link, headers=detail_headers, timeout=10, verify=False)
+                
                 if detail_resp.status_code != 200:
-                    content_text = f"🚫 학교 서버가 응답하지 않습니다 (에러코드: {detail_resp.status_code}).\n\n하단의 [웹사이트에서 원문 보기] 버튼을 통해 확인해 주세요."
+                    content_text = f"🚫 학교 서버가 응답하지 않습니다 (에러코드: {detail_resp.status_code})."
                 else:
                     detail_soup = BeautifulSoup(detail_resp.text, 'html.parser')
-                    
-                    # 커스텀 에러 페이지(내용 자체가 500 에러인 경우) 2차 감지
                     page_text = detail_soup.get_text()
+                    
                     if "Internal Server Error" in page_text or ("에러 페이지" in page_text and "500" in page_text):
-                        content_text = "🚫 학교 홈페이지 게시판 자체 오류(500 에러)가 발생한 글입니다.\n현재 학교 사이트에서도 열리지 않는 상태일 수 있습니다."
+                        content_text = "🚫 학교 홈페이지 자체 오류가 발생한 글입니다."
                     else:
                         content_area = None
                         
-                        # 1. 전국 대학 게시판 클래스명 싹 다 털기
                         selectors = [
                             '.board_view_con', '.b-content-box', '.board_txt', '.view_con', '.article_view', 
                             '.board-contents', '.content', '.view_body', '.board_body', '.board_content', 
                             'td.content', '.ui-board-view', '#board_content', '.view-content',
                             '.board_view_content', '.board-view-content', '.b-con-box', '.board_con',
                             '.boardView', '.view_area', '.b_content', '.post-content', '.view_info', '.dbData',
-                            '.board_view', '.bbs_view', '.v_con', '.board_article', 'td.con', '.con_txt', 
-                            '#bo_v_con', '.board_view_area', '.fr-view'
+                            'div[class*="view"]', 'div[class*="content"]', 'td[class*="content"]'
                         ]
                         
                         for selector in selectors:
                             elements = detail_soup.select(selector)
                             for el in elements:
                                 if el.find(['header', 'footer']): continue
-                                
                                 text_length = len(el.get_text(strip=True))
                                 img_count = len(el.select('img'))
                                 if text_length > 10 or img_count > 0:
@@ -115,44 +122,51 @@ def get_kknu_notices():
                                     break
                             if content_area: break
                                 
-                        # 2. 핵심 해결책: 위에서 못 찾았으면 무식하게 텍스트 제일 많은 놈 잡아채기
+                        # ✨ 핵심 4: 최후의 수단, 페이지 몸통 전체에서 텍스트 강제 쥐어짜기!
                         if not content_area:
-                            for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript']):
+                            for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript', 'form']):
                                 trash.extract()
                                 
-                            candidates = detail_soup.find_all(['div', 'td', 'article', 'section'])
-                            best_block = None
-                            max_len = 0
-                            
-                            for block in candidates:
-                                a_text_len = sum(len(a.get_text(strip=True)) for a in block.find_all('a'))
-                                total_text_len = len(block.get_text(strip=True))
+                            body = detail_soup.find('body')
+                            if body:
+                                best_block = None
+                                max_len = 0
                                 
-                                if total_text_len > 0 and (a_text_len / total_text_len) > 0.4:
-                                    continue
+                                # 모든 껍데기(div, td, table, section 등) 스캔
+                                for block in body.find_all(['div', 'td', 'article', 'section']):
+                                    # 또 다른 큰 껍데기는 제외
+                                    if len(block.find_all(['div', 'table'])) > 5: continue
+                                        
+                                    text_len = len(block.get_text(strip=True))
+                                    if text_len > max_len:
+                                        max_len = text_len
+                                        best_block = block
+                                        
+                                if best_block and max_len > 10:
+                                    content_area = best_block
+                                    img_count = len(content_area.select('img'))
+                                else:
+                                    # 진짜 아무것도 없으면 그냥 전체 텍스트 싹쓸이
+                                    content_area = body
                                     
-                                if total_text_len > max_len:
-                                    max_len = total_text_len
-                                    best_block = block
-                                    
-                            if best_block and max_len > 10:
-                                content_area = best_block
-                                img_count = len(content_area.select('img'))
-                                
-                        # 3. 텍스트 예쁘게 다듬기
+                        # 텍스트 다듬기
                         if content_area:
                             for script in content_area(["script", "style"]):
                                 script.extract()
                             
+                            # 표(Table)나 문단의 줄바꿈이 예쁘게 유지되도록 <br>을 엔터로 변환
+                            for br in content_area.find_all("br"):
+                                br.replace_with("\n")
+                                
                             lines = [line.strip() for line in content_area.get_text(separator='\n').splitlines() if line.strip()]
                             content_text = '\n\n'.join(lines)
                             
                             if len(content_text) < 5 and img_count > 0:
                                 content_text = "🖼️ [텍스트 없이 포스터/이미지로만 안내된 공지사항입니다]\n\n상세 이미지는 하단의 '웹사이트에서 원문 보기' 버튼을 눌러 확인해 주세요."
-                            elif len(content_text) > 1000:
-                                content_text = content_text[:1000] + "\n\n... (원문에서 계속)"
+                            elif len(content_text) > 1500:
+                                content_text = content_text[:1500] + "\n\n... (본문이 너무 길어 생략되었습니다. 하단 버튼을 눌러 원문을 확인하세요)"
                         else:
-                            content_text = "🔒 특수 구조로 된 게시글이거나 첨부파일만 있는 글입니다.\n\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 학교 홈페이지에서 직접 확인해 주세요."
+                            content_text = "🔒 게시글의 텍스트를 인식할 수 없습니다.\n\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 학교 홈페이지에서 직접 확인해 주세요."
 
             except Exception as e:
                 print(f"본문 긁어오기 실패 ({link}): {e}")
