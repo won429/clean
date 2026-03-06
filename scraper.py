@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import urllib3
 import re
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 # 보안 인증서 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -46,24 +47,31 @@ def get_kknu_notices():
             title = re.sub(r'^\[.*?\]\s*', '', title)
             href = valid_a.get('href', '')
             
-            # ✨ 핵심 해결: 선생님이 찾아주신 '완벽한 황금 열쇠 주소' 100% 이식!
-            # 학교 서버가 요구하는 쓸모없는 14개의 빈 껍데기 파라미터까지 완벽하게 복제해서 500 에러 원천 차단!
+            # ✨ 진짜 최종 완벽 해결: 파이썬의 URL 수학적 분해 및 조립 엔진 탑재
             if 'javascript' in href.lower() or 'fn' in href.lower():
                 numbers = re.findall(r"\d+", href)
-                if numbers:
-                    board_idx = max(numbers, key=len)
-                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10"
-                else: 
-                    link = url
+                raw_link = f"https://www.gknu.ac.kr/main/board/view.do?board_idx={max(numbers, key=len) if numbers else ''}"
             elif href.startswith('?'): 
-                link = "https://www.gknu.ac.kr/main/board/view.do" + href
-                # 만약 상대경로 주소인데 필수 파라미터가 빠져있다면 강제 주입
-                if "old_menu_idx" not in link: 
-                    link += "&old_menu_idx=0&old_manage_idx=0&old_board_idx=0&group_depth=0&parent_idx=0&group_idx=0&search.category1=102&search_type=title%2Bcontent&search_text=&orderby=&rowCount=10"
+                raw_link = "https://www.gknu.ac.kr/main/board/view.do" + href
             elif href.startswith('/'): 
-                link = base_url + href
+                raw_link = base_url + href
+            elif not href.startswith('http'):
+                raw_link = base_url + '/' + href
             else: 
-                link = href
+                raw_link = href
+
+            # 주소를 부품 단위로 산산조각 낸 뒤, 
+            parsed_url = urlparse(raw_link)
+            query_params = parse_qs(parsed_url.query)
+
+            # 학교 서버가 500 에러를 뱉지 못하도록 필수 입장권 3대장을 강제로 욱여넣습니다.
+            query_params['menu_idx'] = ['68']
+            query_params['manage_idx'] = ['1']
+            query_params['search.category1'] = ['102']
+            
+            # 단 하나의 오차도 없이 파이썬 엔진으로 완벽하게 재조립! (인코딩 에러 100% 차단)
+            new_query = urlencode(query_params, doseq=True)
+            link = urlunparse(parsed_url._replace(query=new_query))
             
             date_str = ""
             for td in tds:
