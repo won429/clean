@@ -45,26 +45,30 @@
       const [selectedSchool, setSelectedSchool] = useState("국립경국대학교 안동캠퍼스");
       const [isSchoolMenuOpen, setIsSchoolMenuOpen] = useState(false);
       
-      // ✨ 가짜 데이터를 지우고, 진짜 데이터를 담을 빈 공간을 만듭니다.
       const [feedData, setFeedData] = useState([]);
       const [isLoading, setIsLoading] = useState(true);
+      // ✨ 에러 메시지를 화면에 띄우기 위한 공간 추가
+      const [errorMsg, setErrorMsg] = useState("");
 
       const SCHOOLS = ["국립경국대학교 안동캠퍼스", "국립경국대학교 상주캠퍼스", "서울캠퍼스", "글로벌캠퍼스"];
       const categories = ["전체", "인기", "학사", "장학", "취업", "일반"];
 
-      // ✨ 파이썬이 만든 notices.json 파일을 긁어오는 로직!
       useEffect(() => {
-        fetch('notices.json')
+        // 혹시 파일이 캐싱되어 옛날 걸 불러올까 봐 타임스탬프 추가
+        fetch(`notices.json?t=${new Date().getTime()}`)
           .then(response => {
-            if (!response.ok) throw new Error("데이터 파일이 아직 없습니다.");
+            if (!response.ok) {
+              throw new Error(`파일을 찾을 수 없습니다 (상태: ${response.status}). 깃허브에 notices.json 파일이 생성되었는지 확인하세요!`);
+            }
             return response.json();
           })
           .then(data => {
-            setFeedData(data); // 진짜 데이터를 화면에 쏙!
+            setFeedData(data);
             setIsLoading(false);
           })
           .catch(error => {
             console.error("데이터 로딩 실패:", error);
+            setErrorMsg(error.message); // ✨ 화면에 에러 띄우기
             setIsLoading(false);
           });
       }, []);
@@ -152,8 +156,18 @@
               </div>
 
               <div className="space-y-3">
-                {/* ✨ 로딩 중일 때 표시할 화면 */}
-                {isLoading && (
+                {/* ✨ 에러가 발생했을 때 보여줄 경고창 */}
+                {errorMsg && (
+                  <div className="bg-[#F04452]/10 border border-[#F04452]/20 rounded-[20px] p-6 text-center shadow-sm">
+                    <h3 className="text-[#F04452] font-extrabold text-[16px] mb-2">🚨 데이터 연결 실패</h3>
+                    <p className="text-[#F04452]/80 text-[13px] font-medium leading-relaxed">
+                      {errorMsg}<br/><br/>
+                      💡 해결 방법: 깃허브 창고에 <b className="text-black">notices.json</b> 파일이 있는지 확인해 주세요! 없다면 파이썬 수집 로봇을 실행해야 합니다.
+                    </p>
+                  </div>
+                )}
+
+                {isLoading && !errorMsg && (
                   <div className="text-center py-10 text-[#8B95A1] font-bold animate-pulse">
                     데이터를 불러오는 중입니다...
                   </div>
