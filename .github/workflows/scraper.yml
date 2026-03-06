@@ -1,0 +1,33 @@
+name: 캠퍼스 공지사항 수집 로봇
+
+on:
+  schedule:
+    - cron: '0 * * * *' # 매시간 정각마다 실행
+  workflow_dispatch: # 내가 버튼 눌러서 실행하기
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 로봇 준비 (라이브러리 설치)
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: 파이썬 실행! (데이터 긁어오기)
+      run: python scraper.py
+
+    - name: 결과물(notices.json) 저장하기
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add notices.json
+        git commit -m "데이터 업데이트 완료!" || echo "새로운 공지가 없습니다."
+        git push
