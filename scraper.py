@@ -22,12 +22,11 @@ def get_kknu_notices():
     
     notice_list = []
     
-    # ✨ 핵심 1: 세션(Session) 열기! 
-    # 학교 서버에게 '로봇'이 아니라 '일반 방문자'로 인식시키기 위해 쿠키와 방문 기록을 유지합니다.
+    # 세션(Session) 열기
     session = requests.Session()
     
     try:
-        # 먼저 게시판 목록 페이지를 방문해서 서버와 인사(쿠키 발급)를 나눕니다.
+        # 1차 방문: 쿠키 발급
         response = session.get(url, headers=headers, timeout=15, verify=False)
         response.raise_for_status() 
         
@@ -49,19 +48,23 @@ def get_kknu_notices():
             title = re.sub(r'^\[.*?\]\s*', '', title)
             href = valid_a.get('href', '')
             
-            # ✨ 핵심 2: 불필요한 파라미터(search.category1) 제거
-            # 500 에러를 유발하던 찌꺼기 주소를 빼고, 오직 글 번호(board_idx)만 깔끔하게 보냅니다.
+            # ✨ 핵심 해결: 모든 접속 주소에 필수 입장권(search.category1=102) 강제 부착!
+            # 이 파라미터가 빠지면 학교 서버가 무조건 500 에러를 뱉습니다.
             if 'javascript' in href.lower() or 'fn' in href.lower():
                 numbers = re.findall(r"\d+", href)
                 if numbers:
                     board_idx = max(numbers, key=len)
-                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&board_idx={board_idx}"
+                    link = f"https://www.gknu.ac.kr/main/board/view.do?menu_idx=68&manage_idx=1&search.category1=102&board_idx={board_idx}"
                 else: 
                     link = url
             elif href.startswith('?'): 
                 link = "https://www.gknu.ac.kr/main/board/view.do" + href
-            elif href.startswith('/'): link = base_url + href
-            else: link = href
+                if "search.category1" not in link: 
+                    link += "&search.category1=102"
+            elif href.startswith('/'): 
+                link = base_url + href
+            else: 
+                link = href
             
             date_str = ""
             for td in tds:
@@ -84,11 +87,10 @@ def get_kknu_notices():
             content_text = ""
             img_count = 0
             try:
-                # ✨ 핵심 3: Referer 추가! "나 아까 그 목록 페이지에서 넘어온 거야!" 라고 서버에 어필
                 detail_headers = headers.copy()
                 detail_headers['Referer'] = url
                 
-                # 일반 requests.get이 아닌 세션(session.get)을 이용해 본문 접속
+                # 완전한 주소(link)로 접속
                 detail_resp = session.get(link, headers=detail_headers, timeout=10, verify=False)
                 
                 if detail_resp.status_code != 200:
@@ -122,7 +124,6 @@ def get_kknu_notices():
                                     break
                             if content_area: break
                                 
-                        # ✨ 핵심 4: 최후의 수단, 페이지 몸통 전체에서 텍스트 강제 쥐어짜기!
                         if not content_area:
                             for trash in detail_soup(['header', 'footer', 'nav', 'aside', 'script', 'style', 'noscript', 'form']):
                                 trash.extract()
@@ -132,9 +133,7 @@ def get_kknu_notices():
                                 best_block = None
                                 max_len = 0
                                 
-                                # 모든 껍데기(div, td, table, section 등) 스캔
                                 for block in body.find_all(['div', 'td', 'article', 'section']):
-                                    # 또 다른 큰 껍데기는 제외
                                     if len(block.find_all(['div', 'table'])) > 5: continue
                                         
                                     text_len = len(block.get_text(strip=True))
@@ -146,15 +145,12 @@ def get_kknu_notices():
                                     content_area = best_block
                                     img_count = len(content_area.select('img'))
                                 else:
-                                    # 진짜 아무것도 없으면 그냥 전체 텍스트 싹쓸이
                                     content_area = body
                                     
-                        # 텍스트 다듬기
                         if content_area:
                             for script in content_area(["script", "style"]):
                                 script.extract()
                             
-                            # 표(Table)나 문단의 줄바꿈이 예쁘게 유지되도록 <br>을 엔터로 변환
                             for br in content_area.find_all("br"):
                                 br.replace_with("\n")
                                 
