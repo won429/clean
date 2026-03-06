@@ -80,15 +80,23 @@ def get_kknu_notices():
                     '.b-content-box', '.b-txt', '.board-contents', '.board_txt', 
                     '.board_view_con', '.view_con', '.article_view', '.content', 
                     '.view_body', '.board_body', '.board_content', 'td.content', 
-                    '.ui-board-view', '#board_content', '.view-content'
+                    '.ui-board-view', '#board_content', '.view-content',
+                    # ✨ 추가 투망: 경국대 및 기타 대학의 변태 클래스명 총집합
+                    '.board_view_content', '.board-view-content', '.b-con-box', '.board_con',
+                    '.boardView', '.view_area', '.b_content', '.post-content', '.view_info', '.dbData'
                 ]
                 
                 content_area = None
                 for selector in selectors:
-                    content_area = detail_soup.select_one(selector)
-                    # 찾은 박스 안에 진짜 글씨가 들어있는지 확인 (20자 이상)
-                    if content_area and len(content_area.get_text(strip=True)) > 20:
-                        break # 진짜 본문을 찾았으면 탐색 중단!
+                    element = detail_soup.select_one(selector)
+                    if element:
+                        text_length = len(element.get_text(strip=True))
+                        img_count = len(element.select('img'))
+                        
+                        # ✨ 조건 완화: 글자가 5자 이상이거나, 사진이 1장이라도 들어있다면 "이게 본문이다!" 확정
+                        if text_length > 5 or img_count > 0:
+                            content_area = element
+                            break # 진짜 본문을 찾았으면 탐색 중단!
                         
                 if content_area:
                     # 불필요한 스크립트나 스타일(코드 찌꺼기) 제거
@@ -99,10 +107,13 @@ def get_kknu_notices():
                     lines = [line.strip() for line in content_area.get_text(separator='\n').splitlines() if line.strip()]
                     content_text = '\n\n'.join(lines)
                     
-                    if len(content_text) > 1000:
+                    # ✨ 텍스트는 없고 사진만 있는 게시글 특별 처리!
+                    if len(content_text) < 5 and img_count > 0:
+                        content_text = "🖼️ [텍스트 없이 포스터/이미지로만 안내된 공지사항입니다]\n\n상세 이미지는 하단의 '웹사이트에서 원문 보기' 버튼을 눌러 확인해 주세요."
+                    elif len(content_text) > 1000:
                         content_text = content_text[:1000] + "\n\n... (원문에서 계속)"
                 else:
-                    content_text = "표나 이미지만으로 작성된 게시글이거나, 특수 보안 구조로 되어 있습니다.\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 확인해 주세요."
+                    content_text = "🔒 표(Table)로만 작성되었거나 특수 구조로 된 게시글입니다.\n\n하단의 [원문 및 첨부파일 보기] 버튼을 눌러 학교 홈페이지에서 직접 확인해 주세요."
             except Exception as e:
                 print(f"본문 긁어오기 실패 ({link}): {e}")
             
