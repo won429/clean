@@ -14,6 +14,17 @@
     "id": 2,
     "school": "국립경국대",
     "category": "학사안내",
+    "title": "2026학년도 1학기 군이러닝 및 군교육훈련 학점인정 신청 안내N",
+    "timeAgo": "2026.04.10",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": true,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 3,
+    "school": "국립경국대",
+    "category": "학사안내",
     "title": "2026학년도 1학기 중간 수업평가 실시 안내",
     "timeAgo": "2026.04.07",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
@@ -22,7 +33,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 3,
+    "id": 4,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제2차 교직적성 및 인성검사 시행 안내",
@@ -33,7 +44,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 4,
+    "id": 5,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 1학기 학점취득 특별시험 시행 계획 안내",
@@ -44,7 +55,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 5,
+    "id": 6,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제1차 성인지교육 시행 안내",
@@ -55,7 +66,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 6,
+    "id": 7,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 1학기 추가등록(2차) 및 분할납부(2차) 안내",
@@ -66,7 +77,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 7,
+    "id": 8,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 1학기 2차 폐강 교과목 안내",
@@ -77,7 +88,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 8,
+    "id": 9,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제1차 응급처치 및 심폐소생술 실습 안내",
@@ -88,7 +99,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 9,
+    "id": 10,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제1차 교직적성 및 인성검사 시행 안내",
@@ -99,22 +110,11 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 10,
+    "id": 11,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 1학기 한국형 온라인 공개강좌(K-MOOC) 학점인정 절차 안내",
     "timeAgo": "2026.03.05",
-    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
-    "isHot": false,
-    "dDay": null,
-    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
-  },
-  {
-    "id": 11,
-    "school": "국립경국대",
-    "category": "학사안내",
-    "title": "2026학년도 1학기 조기졸업 신청 안내",
-    "timeAgo": "2026.03.04",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
     "isHot": false,
     "dDay": null,
