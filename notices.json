@@ -14,6 +14,39 @@
     "id": 2,
     "school": "국립경국대",
     "category": "학사안내",
+    "title": "2026학년도 1학기 성적이의 신청기간 공고N",
+    "timeAgo": "2026.06.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": true,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 3,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 1학기 성적열람 및 정정 신청기간 공고N",
+    "timeAgo": "2026.06.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": true,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 4,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 1학기 한국형 온라인 공개강좌(K-MOOC) 학점인정 신청 안내N",
+    "timeAgo": "2026.06.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": true,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 5,
+    "school": "국립경국대",
+    "category": "학사안내",
     "title": "2026학년도 1학기 수업평가 실시 안내",
     "timeAgo": "2026.06.04",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
@@ -22,7 +55,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 3,
+    "id": 6,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 여름 계절수업 및 폐강 교과목 공지(폐강교과목 추가)",
@@ -33,7 +66,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 4,
+    "id": 7,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 여름 계절수업 및 폐강 교과목 공지",
@@ -44,7 +77,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 5,
+    "id": 8,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제3차 응급처치 및 심폐소생술 실습 안내",
@@ -55,7 +88,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 6,
+    "id": 9,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026-1학기 학생설계전공 신청 안내(연장)",
@@ -66,7 +99,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 7,
+    "id": 10,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 제2차 성인지교육 시행 안내",
@@ -77,44 +110,11 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 8,
+    "id": 11,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 여름 계절수업 개설 교과목 안내(영어회화 담당교원 지정)",
     "timeAgo": "2026.05.15",
-    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
-    "isHot": false,
-    "dDay": null,
-    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
-  },
-  {
-    "id": 9,
-    "school": "국립경국대",
-    "category": "학사안내",
-    "title": "2026학년도 여름 계절수업 개설 교과목 안내",
-    "timeAgo": "2026.05.13",
-    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
-    "isHot": false,
-    "dDay": null,
-    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
-  },
-  {
-    "id": 10,
-    "school": "국립경국대",
-    "category": "학사안내",
-    "title": "2026학년도 1학기 성장도전학기제 신청 안내",
-    "timeAgo": "2026.05.11",
-    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
-    "isHot": false,
-    "dDay": null,
-    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
-  },
-  {
-    "id": 11,
-    "school": "국립경국대",
-    "category": "학사안내",
-    "title": "2026학년도 제2차 응급처치 및 심폐소생술 실습 안내",
-    "timeAgo": "2026.04.23",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
     "isHot": false,
     "dDay": null,
