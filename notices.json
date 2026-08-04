@@ -47,6 +47,17 @@
     "id": 5,
     "school": "국립경국대",
     "category": "학사안내",
+    "title": "2026학년도 2학기 학생설계전공 신청 안내(연장)N",
+    "timeAgo": "2026.08.04",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": true,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 6,
+    "school": "국립경국대",
+    "category": "학사안내",
     "title": "2026학년도 2학기 등록금 차등납부 안내N",
     "timeAgo": "2026.08.03",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
@@ -55,7 +66,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 6,
+    "id": 7,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 1학기 해외 어학연수 학점 인정 안내",
@@ -66,7 +77,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 7,
+    "id": 8,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 수강신청 일정 공고",
@@ -77,7 +88,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 8,
+    "id": 9,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 등록 안내(분할납부·납부연기 신청 및 안내 포함)",
@@ -88,7 +99,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 9,
+    "id": 10,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 타 대학 학점교류 신청 안내(경국대 → 타대학)",
@@ -99,7 +110,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 10,
+    "id": 11,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 휴·복학 안내",
@@ -110,7 +121,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 11,
+    "id": 12,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 재입학 시행 계획 안내",
@@ -121,7 +132,7 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 12,
+    "id": 13,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "증명 발급 제한 안내",
@@ -132,22 +143,11 @@
     "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   },
   {
-    "id": 13,
+    "id": 14,
     "school": "국립경국대",
     "category": "학사안내",
     "title": "2026학년도 2학기 자유전과 시행 안내",
     "timeAgo": "2026.07.02",
-    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
-    "isHot": false,
-    "dDay": null,
-    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
-  },
-  {
-    "id": 14,
-    "school": "국립경국대",
-    "category": "학사안내",
-    "title": "2026학년도 2학기 학생설계전공 신청 안내",
-    "timeAgo": "2026.06.30",
     "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
     "isHot": false,
     "dDay": null,
