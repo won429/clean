@@ -1,13 +1,123 @@
 [
   {
     "id": 1,
-    "school": "시스템",
-    "category": "오류",
-    "title": "접속 지연: HTTPSConnectionPool(host='www.",
-    "timeAgo": "2026.10.23",
-    "link": "#",
-    "isHot": true,
-    "dDay": "점검중",
-    "content": ""
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 타 대학교 겨울 계절수업 수학 안내(경국대 → 타대학)",
+    "timeAgo": "2026.10.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 2,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 제5차 교직적성 및 인성검사 시행 안내",
+    "timeAgo": "2026.10.16",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 3,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 국립경국대학교 겨울 계절수업 실시 계획 안내",
+    "timeAgo": "2026.10.16",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 4,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 2학기 성장도전학기제 신청 안내",
+    "timeAgo": "2026.10.16",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 5,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 타 대학교 겨울 계절수업 수학 안내(경국대 → 타대학)",
+    "timeAgo": "2026.10.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 6,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 2학기 중간 수업평가 실시 안내",
+    "timeAgo": "2026.10.13",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 7,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 제3차 성인지교육 시행 안내",
+    "timeAgo": "2026.10.02",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 8,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 2학기 학생설계전공 신청 안내(변경)",
+    "timeAgo": "2026.09.21",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 9,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 2학기 추가등록(2차) 및 분할납부(2차) 안내",
+    "timeAgo": "2026.09.15",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 10,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 제4차 응급처치 및 심폐소생술 실습 안내",
+    "timeAgo": "2026.09.14",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
+  },
+  {
+    "id": 11,
+    "school": "국립경국대",
+    "category": "학사안내",
+    "title": "2026학년도 2학기 폐강 교과목 안내(2차)",
+    "timeAgo": "2026.09.08",
+    "link": "https://www.gknu.ac.kr/main/board/view.do?board_idx=0&menu_idx=68&manage_idx=1&search.category1=102",
+    "isHot": false,
+    "dDay": null,
+    "content": "🚫 학교 서버가 응답하지 않습니다 (에러코드: 500)."
   }
 ]
